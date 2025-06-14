@@ -4,7 +4,14 @@ Um aplicativo React para montar e exportar horários de disciplinas da UFPB. Est
 
 ## Demonstração
 
-[Adicione aqui um screenshot ou gif do projeto em funcionamento]
+### Visualização em Grade
+![Visualização em Grade](img/Captura%20de%20imagem_20250614_150151.png)
+
+### Visualização em Lista
+![Visualização em Lista](img/Captura%20de%20imagem_20250614_150254.png)
+
+### Formulário de Adição/Edição
+![Formulário de Adição/Edição](img/Captura%20de%20imagem_20250614_150307.png)
 
 ## Pré-requisitos
 
