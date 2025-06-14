@@ -12,5 +12,5 @@ export default defineConfig({
       '.ngrok-free.app', // Permite qualquer subdomínio do ngrok
     ],
   },
-  base: '/horario/'
+  base: '/horario/',
 }) 
