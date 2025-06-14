@@ -29,7 +29,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         removeNotification(id);
       }, duration);
     }
-  }, []);
+  }, [removeNotification]);
 
   const removeNotification = useCallback((id: number) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));

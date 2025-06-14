@@ -3,11 +3,7 @@ import { Download, Upload, Trash2, FileText, AlertCircle } from 'lucide-react';
 import { SubjectService } from '../services/subjectService';
 import { useSubjectsStore } from '../stores/useSubjectsStore';
 
-interface ExportOptionsProps {
-  scheduleRef: React.RefObject<HTMLDivElement>;
-}
-
-export function ExportOptions({ scheduleRef }: ExportOptionsProps) {
+export function ExportOptions() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { subjects, setSubjects } = useSubjectsStore();
   const [error, setError] = useState<string | null>(null);

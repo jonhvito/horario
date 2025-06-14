@@ -6,7 +6,7 @@ const BACKUP_KEY = 'schedule_backup';
 const MAX_BACKUPS = 5;
 
 export class StorageService {
-  private static compressData(data: any): string {
+  private static compressData(data: unknown): string {
     try {
       const jsonString = JSON.stringify(data);
       return btoa(jsonString);
@@ -15,7 +15,7 @@ export class StorageService {
     }
   }
 
-  private static decompressData(compressedData: string): any {
+  private static decompressData(compressedData: string): unknown {
     try {
       const jsonString = atob(compressedData);
       return JSON.parse(jsonString);

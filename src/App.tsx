@@ -18,7 +18,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = React.useState<'grid' | 'list'>('grid');
   const scheduleRef = useRef<HTMLDivElement>(null);
 
-  const { subjects, addSubject, updateSubject, deleteSubject, refreshSubjects } = useSubjectsStore();
+  const { subjects, addSubject, updateSubject, deleteSubject } = useSubjectsStore();
   const { showNotification } = useNotification();
 
   // Inicializar localStorage

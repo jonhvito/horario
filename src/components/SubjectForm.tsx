@@ -14,7 +14,6 @@ interface SubjectFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (subject: Omit<Subject, 'id' | 'code' | 'color'>) => void;
-  existingSubjects: Subject[];
   editingSubject?: Subject | null;
 }
 
@@ -22,7 +21,6 @@ export function SubjectForm({
   isOpen, 
   onClose, 
   onSave, 
-  existingSubjects, 
   editingSubject 
 }: SubjectFormProps) {
   const { showNotification } = useNotification();

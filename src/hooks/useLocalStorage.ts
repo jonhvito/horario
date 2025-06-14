@@ -21,7 +21,7 @@ export const useLocalStorage = () => {
         }
       }
     }
-  }, []);
+  }, [setSubjects, setDarkMode]);
 
   // Salvar disciplinas no localStorage
   useEffect(() => {

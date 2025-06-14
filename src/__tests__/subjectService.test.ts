@@ -45,7 +45,7 @@ describe('SubjectService', () => {
     });
 
     it('should throw ConflictError when update creates a conflict', () => {
-      const subject1 = SubjectService.addSubject(mockSubject);
+      SubjectService.addSubject(mockSubject);
       const subject2 = SubjectService.addSubject({
         ...mockSubject,
         name: 'Cálculo II',
