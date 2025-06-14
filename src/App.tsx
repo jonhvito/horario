@@ -96,7 +96,7 @@ function AppContent() {
       </div>
 
       <div className="space-y-6">
-        <ExportOptions scheduleRef={scheduleRef} />
+        <ExportOptions />
         <Legend />
       </div>
 
@@ -104,7 +104,6 @@ function AppContent() {
         isOpen={isFormOpen}
         onClose={handleCloseForm}
         onSave={handleSaveSubject}
-        existingSubjects={subjects}
         editingSubject={editingSubject}
       />
     </MainLayout>

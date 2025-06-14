@@ -230,8 +230,10 @@ export function SubjectForm({
                 <label key={shiftKey} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
+                    name="shift"
+                    value={shiftKey}
                     checked={formData.shift === shiftKey}
-                    onChange={() => handleChange({ target: { name: 'shift', value: shiftKey as 'M' | 'T' | 'N' } })}
+                    onChange={handleChange}
                     className="border-gray-300 dark:border-gray-600 text-ufpb-primary focus:ring-ufpb-primary"
                   />
                   <span className="text-sm text-gray-700 dark:text-gray-200">{shiftName}</span>
