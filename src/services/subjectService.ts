@@ -4,24 +4,66 @@ import { generateSubjectCode, checkScheduleConflicts, getNextAvailableColor } fr
 import { ValidationError, ConflictError, StorageError, handleError } from '../utils/errors';
 
 export class SubjectService {
+  private static validateSubjectData(subject: Partial<Subject>, isUpdate: boolean = false): void {
+    if (!isUpdate || 'name' in subject) {
+      if (!subject.name?.trim()) {
+        throw new ValidationError('Nome da disciplina é obrigatório');
+      }
+    }
+    if (!isUpdate || 'location' in subject) {
+      if (!subject.location?.trim()) {
+        throw new ValidationError('Localização é obrigatória');
+      }
+    }
+    if (!isUpdate || 'days' in subject) {
+      if (!subject.days?.length) {
+        throw new ValidationError('Pelo menos um dia deve ser selecionado');
+      }
+    }
+    if (!isUpdate || 'timeSlots' in subject) {
+      if (!subject.timeSlots?.length) {
+        throw new ValidationError('Pelo menos um horário deve ser selecionado');
+      }
+    }
+    if (!isUpdate || 'shift' in subject) {
+      if (!subject.shift) {
+        throw new ValidationError('Turno é obrigatório');
+      }
+    }
+  }
+
   static loadSubjects(): Subject[] {
     try {
-      return StorageService.loadData();
+      const subjects = StorageService.loadData();
+      if (!Array.isArray(subjects)) {
+        throw new ValidationError('Dados corrompidos: formato inválido');
+      }
+      return subjects;
     } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
       throw new StorageError('Erro ao carregar disciplinas', { originalError: error });
     }
   }
 
   static saveSubjects(subjects: Subject[]): void {
     try {
+      if (!Array.isArray(subjects)) {
+        throw new ValidationError('Dados inválidos: formato incorreto');
+      }
       StorageService.saveData(subjects);
     } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
       throw new StorageError('Erro ao salvar disciplinas', { originalError: error });
     }
   }
 
   static addSubject(subject: Omit<Subject, 'id' | 'code' | 'color'>): Subject {
     try {
+      this.validateSubjectData(subject);
       const subjects = this.loadSubjects();
       const conflicts = checkScheduleConflicts(subject, subjects);
       
@@ -40,7 +82,7 @@ export class SubjectService {
       this.saveSubjects(subjects);
       return newSubject;
     } catch (error) {
-      if (error instanceof ConflictError) {
+      if (error instanceof ValidationError || error instanceof ConflictError) {
         throw error;
       }
       throw handleError(error);
@@ -56,18 +98,20 @@ export class SubjectService {
         throw new ValidationError('Disciplina não encontrada', { id });
       }
 
+      const currentSubject = subjects[index];
       const updatedSubject: Subject = {
-        ...subjects[index],
+        ...currentSubject,
         ...updates,
         code: generateSubjectCode(
-          updates.days || subjects[index].days,
-          updates.shift || subjects[index].shift,
-          updates.timeSlots || subjects[index].timeSlots
+          updates.days || currentSubject.days,
+          updates.shift || currentSubject.shift,
+          updates.timeSlots || currentSubject.timeSlots
         )
       };
 
-      const conflicts = checkScheduleConflicts(updatedSubject, subjects, id);
+      this.validateSubjectData(updatedSubject, true);
       
+      const conflicts = checkScheduleConflicts(updatedSubject, subjects, id);
       if (conflicts.length > 0) {
         throw new ConflictError('Conflito de horário detectado', { conflicts });
       }
@@ -103,6 +147,7 @@ export class SubjectService {
 
   static getSubjectConflicts(subject: Omit<Subject, 'id' | 'code' | 'color'>, excludeId?: string): ScheduleConflict[] {
     try {
+      this.validateSubjectData(subject);
       const subjects = this.loadSubjects();
       return checkScheduleConflicts(subject, subjects, excludeId);
     } catch (error) {
@@ -120,9 +165,16 @@ export class SubjectService {
 
   static importSchedule(jsonData: string): boolean {
     try {
+      const data = JSON.parse(jsonData);
+      if (!Array.isArray(data)) {
+        throw new ValidationError('Dados importados inválidos: formato incorreto');
+      }
       StorageService.importData(jsonData);
       return true;
     } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
       return false;
     }
   }

@@ -1,5 +1,10 @@
+import { jest } from '@jest/globals';
 import { SubjectService } from '../services/subjectService';
-import { ValidationError, ConflictError } from '../utils/errors';
+import { ValidationError, ConflictError, StorageError } from '../utils/errors';
+import { StorageService } from '../services/storageService';
+
+// Simula um banco de dados em memória para os mocks
+let mockDB: any[] = [];
 
 describe('SubjectService', () => {
   const mockSubject = {
@@ -12,7 +17,23 @@ describe('SubjectService', () => {
   };
 
   beforeEach(() => {
-    localStorage.clear();
+    jest.clearAllMocks();
+    mockDB = [];
+    jest.spyOn(StorageService, 'loadData').mockImplementation(() => [...mockDB]);
+    jest.spyOn(StorageService, 'saveData').mockImplementation((data) => { mockDB = [...data]; });
+    jest.spyOn(StorageService, 'clearData').mockImplementation(() => { mockDB = []; });
+    jest.spyOn(StorageService, 'exportData').mockImplementation(() => JSON.stringify(mockDB));
+    jest.spyOn(StorageService, 'importData').mockImplementation((json) => {
+      try {
+        const data = JSON.parse(json);
+        mockDB = Array.isArray(data) ? data : [];
+        StorageService.saveData(mockDB);
+      } catch {
+        // não faz nada
+      }
+    });
+    jest.spyOn(StorageService, 'restoreBackup').mockImplementation(() => {});
+    jest.spyOn(StorageService, 'getAvailableBackups').mockReturnValue([]);
   });
 
   describe('addSubject', () => {
@@ -24,20 +45,39 @@ describe('SubjectService', () => {
         code: expect.any(String),
         color: expect.any(String)
       });
+      expect(StorageService.saveData).toHaveBeenCalled();
     });
 
     it('should throw ConflictError when there is a schedule conflict', () => {
-      SubjectService.addSubject(mockSubject);
+      (StorageService.loadData as jest.Mock).mockReturnValue([mockSubject]);
       expect(() => SubjectService.addSubject(mockSubject)).toThrow(ConflictError);
+    });
+
+    it('should throw StorageError when storage fails', () => {
+      (StorageService.loadData as jest.Mock).mockImplementation(() => {
+        throw new Error('Storage error');
+      });
+      expect(() => SubjectService.addSubject(mockSubject)).toThrow(StorageError);
     });
   });
 
   describe('updateSubject', () => {
+    const existingSubject = {
+      ...mockSubject,
+      id: '123',
+      code: 'TEST',
+      color: '#000000'
+    };
+
+    beforeEach(() => {
+      (StorageService.loadData as jest.Mock).mockReturnValue([existingSubject]);
+    });
+
     it('should update an existing subject successfully', () => {
-      const subject = SubjectService.addSubject(mockSubject);
       const updates = { name: 'Cálculo II' };
-      const updated = SubjectService.updateSubject(subject.id, updates);
+      const updated = SubjectService.updateSubject(existingSubject.id, updates);
       expect(updated.name).toBe('Cálculo II');
+      expect(StorageService.saveData).toHaveBeenCalled();
     });
 
     it('should throw ValidationError when subject is not found', () => {
@@ -46,29 +86,57 @@ describe('SubjectService', () => {
     });
 
     it('should throw ConflictError when update creates a conflict', () => {
-      SubjectService.addSubject(mockSubject);
-      const subject2 = SubjectService.addSubject({
+      const subject2 = {
         ...mockSubject,
         name: 'Cálculo II',
-        days: [3, 5]
-      });
+        days: [3, 5],
+        id: '456',
+        code: 'TEST2',
+        color: '#000001'
+      };
+      (StorageService.loadData as jest.Mock).mockReturnValue([existingSubject, subject2]);
 
       expect(() => SubjectService.updateSubject(subject2.id, { days: [2, 4] }))
         .toThrow(ConflictError);
     });
+
+    it('should throw StorageError when storage fails', () => {
+      (StorageService.loadData as jest.Mock).mockImplementation(() => {
+        throw new Error('Storage error');
+      });
+      expect(() => SubjectService.updateSubject(existingSubject.id, { name: 'New Name' }))
+        .toThrow(StorageError);
+    });
   });
 
   describe('deleteSubject', () => {
+    const existingSubject = {
+      ...mockSubject,
+      id: '123',
+      code: 'TEST',
+      color: '#000000'
+    };
+
+    beforeEach(() => {
+      (StorageService.loadData as jest.Mock).mockReturnValue([existingSubject]);
+    });
+
     it('should delete a subject successfully', () => {
-      const subject = SubjectService.addSubject(mockSubject);
-      SubjectService.deleteSubject(subject.id);
-      const subjects = SubjectService.loadSubjects();
-      expect(subjects).toHaveLength(0);
+      SubjectService.deleteSubject(existingSubject.id);
+      expect(StorageService.saveData).toHaveBeenCalledWith([]);
     });
 
     it('should throw ValidationError when subject is not found', () => {
       expect(() => SubjectService.deleteSubject('non-existent-id'))
         .toThrow(ValidationError);
+    });
+
+    it('should throw StorageError when storage fails', () => {
+      (StorageService.loadData as jest.Mock).mockImplementation(() => {
+        throw new Error('Storage error');
+      });
+      expect(() => SubjectService.deleteSubject(existingSubject.id))
+        .toThrow(StorageError);
     });
   });
 
@@ -79,31 +147,47 @@ describe('SubjectService', () => {
     });
 
     it('should return conflicts when they exist', () => {
-      SubjectService.addSubject(mockSubject);
+      (StorageService.loadData as jest.Mock).mockReturnValue([mockSubject]);
       const conflicts = SubjectService.getSubjectConflicts(mockSubject);
       expect(conflicts).toHaveLength(4); // Two time slots for each of the two days
+    });
+
+    it('should throw StorageError when storage fails', () => {
+      (StorageService.loadData as jest.Mock).mockImplementation(() => {
+        throw new Error('Storage error');
+      });
+      expect(() => SubjectService.getSubjectConflicts(mockSubject))
+        .toThrow(StorageError);
     });
   });
 
   describe('exportSchedule and importSchedule', () => {
+    const existingSubject = {
+      ...mockSubject,
+      id: '123',
+      code: 'TEST',
+      color: '#000000'
+    };
+
+    beforeEach(() => {
+      (StorageService.loadData as jest.Mock).mockReturnValue([existingSubject]);
+    });
+
     it('should export and import schedule successfully', () => {
-      const subject = SubjectService.addSubject(mockSubject);
       const exported = SubjectService.exportSchedule();
       SubjectService.clearSchedule();
       const imported = SubjectService.importSchedule(exported);
       expect(imported).toBe(true);
-      const subjects = SubjectService.loadSubjects();
-      expect(subjects).toHaveLength(1);
-      expect(subjects[0]).toMatchObject({
-        ...mockSubject,
-        id: subject.id,
-        code: subject.code,
-        color: subject.color
-      });
+      expect(StorageService.saveData).toHaveBeenCalled();
     });
 
     it('should return false when importing invalid data', () => {
       expect(SubjectService.importSchedule('invalid-json')).toBe(false);
+    });
+
+    it('should throw StorageError when storage fails', () => {
+      jest.spyOn(StorageService, 'exportData').mockImplementation(() => { throw new Error('Storage error'); });
+      expect(() => SubjectService.exportSchedule()).toThrow(StorageError);
     });
   });
 

@@ -1,35 +1,102 @@
 import { Subject } from '../types/schedule';
 import { ValidationError, StorageError } from '../utils/errors';
 
+// Constantes configuráveis
 const STORAGE_KEY = 'schedule_data';
 const BACKUP_KEY = 'schedule_backup';
 const MAX_BACKUPS = 5;
+const COMPRESSION_ENABLED = true;
 
+/**
+ * Serviço responsável por gerenciar o armazenamento local dos dados do horário
+ */
 export class StorageService {
-  private static compressData(data: unknown): string {
+  /**
+   * Verifica se o localStorage está disponível no navegador
+   */
+  private static isLocalStorageAvailable(): boolean {
     try {
-      const jsonString = JSON.stringify(data);
-      return btoa(jsonString);
-    } catch (error) {
-      throw new StorageError('Erro ao comprimir dados');
+      const test = '__storage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  private static decompressData(compressedData: string): unknown {
+  /**
+   * Valida se os dados são um array válido de Subject
+   */
+  private static validateData(data: any): data is Subject[] {
+    if (!Array.isArray(data)) {
+      throw new ValidationError('Dados inválidos: deve ser um array');
+    }
+
+    for (const subject of data) {
+      if (!subject.id || typeof subject.id !== 'string') {
+        throw new ValidationError('Dados inválidos: ID inválido');
+      }
+      if (!subject.name || typeof subject.name !== 'string') {
+        throw new ValidationError('Dados inválidos: nome inválido');
+      }
+      if (!subject.code || typeof subject.code !== 'string') {
+        throw new ValidationError('Dados inválidos: código inválido');
+      }
+      if (!subject.location || typeof subject.location !== 'string') {
+        throw new ValidationError('Dados inválidos: local inválido');
+      }
+      if (!Array.isArray(subject.days) || subject.days.length === 0) {
+        throw new ValidationError('Dados inválidos: dias inválidos');
+      }
+      if (!subject.shift || typeof subject.shift !== 'string') {
+        throw new ValidationError('Dados inválidos: turno inválido');
+      }
+      if (!Array.isArray(subject.timeSlots) || subject.timeSlots.length === 0) {
+        throw new ValidationError('Dados inválidos: horários inválidos');
+      }
+      if (typeof subject.professor !== 'string') {
+        throw new ValidationError('Dados inválidos: professor inválido');
+      }
+      if (!subject.color || typeof subject.color !== 'string') {
+        throw new ValidationError('Dados inválidos: cor inválida');
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Comprime os dados usando base64
+   */
+  private static compressData(data: string): string {
+    return btoa(data);
+  }
+
+  /**
+   * Descomprime os dados de base64
+   */
+  private static decompressData(data: string): string {
     try {
-      const jsonString = atob(compressedData);
-      return JSON.parse(jsonString);
+      return atob(data);
     } catch (error) {
-      throw new StorageError('Erro ao descomprimir dados');
+      throw new ValidationError('Dados corrompidos');
     }
   }
 
+  /**
+   * Cria um backup dos dados atuais
+   */
   private static createBackup(data: Subject[]): void {
+    if (!this.isLocalStorageAvailable()) {
+      throw new StorageError('LocalStorage não está disponível');
+    }
+
     try {
       const backups = this.getBackups();
       const newBackup = {
         timestamp: Date.now(),
-        data: this.compressData(data)
+        data: this.compressData(JSON.stringify(data))
       };
 
       backups.unshift(newBackup);
@@ -40,104 +107,168 @@ export class StorageService {
       localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
     } catch (error) {
       console.error('Erro ao criar backup:', error);
+      throw new StorageError('Erro ao criar backup');
     }
   }
 
-  private static getBackups(): Array<{ timestamp: number; data: string }> {
+  /**
+   * Recupera todos os backups disponíveis
+   */
+  private static getBackups(): { timestamp: number; data: string }[] {
+    if (!this.isLocalStorageAvailable()) {
+      return [];
+    }
+
     try {
       const backups = localStorage.getItem(BACKUP_KEY);
       return backups ? JSON.parse(backups) : [];
     } catch (error) {
-      console.error('Erro ao recuperar backups:', error);
-      return [];
+      throw new StorageError('Erro ao acessar ou recuperar backups do localStorage');
     }
   }
 
+  /**
+   * Salva os dados no localStorage
+   */
   static saveData(data: Subject[]): void {
-    try {
-      if (!Array.isArray(data)) {
-        throw new ValidationError('Dados inválidos para salvar');
-      }
+    if (!this.isLocalStorageAvailable()) {
+      throw new StorageError('LocalStorage não está disponível');
+    }
 
-      const compressedData = this.compressData(data);
-      localStorage.setItem(STORAGE_KEY, compressedData);
+    try {
+      this.validateData(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       this.createBackup(data);
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
       }
-      throw new StorageError('Erro ao salvar dados');
+      throw new StorageError('Erro ao salvar dados no armazenamento local');
     }
   }
 
+  /**
+   * Carrega os dados do localStorage
+   */
   static loadData(): Subject[] {
     try {
-      const compressedData = localStorage.getItem(STORAGE_KEY);
-      if (!compressedData) {
+      if (!localStorage) {
+        throw new StorageError('Armazenamento local não disponível');
+      }
+
+      const data = localStorage.getItem('schedule_data');
+      if (!data) {
         return [];
       }
 
-      const data = this.decompressData(compressedData);
-      if (!Array.isArray(data)) {
+      let parsedData;
+      try {
+        parsedData = JSON.parse(data);
+      } catch (error) {
         throw new ValidationError('Dados corrompidos');
+      }
+      this.validateData(parsedData);
+      return parsedData;
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+      throw new StorageError('Erro ao carregar dados do armazenamento local');
+    }
+  }
+
+  /**
+   * Limpa todos os dados do localStorage
+   */
+  static clearData(): void {
+    if (!this.isLocalStorageAvailable()) {
+      throw new StorageError('LocalStorage não está disponível');
+    }
+
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(BACKUP_KEY);
+    } catch {
+      throw new StorageError('Erro ao limpar dados do armazenamento local');
+    }
+  }
+
+  /**
+   * Exporta os dados em formato JSON
+   */
+  static exportData(): string {
+    if (!this.isLocalStorageAvailable()) {
+      throw new StorageError('LocalStorage não está disponível');
+    }
+
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (!data) {
+        return '[]';
       }
 
       return data;
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
+      throw new StorageError('Erro ao exportar dados do armazenamento local');
+    }
+  }
+
+  /**
+   * Importa dados de uma string JSON
+   */
+  static importData(jsonData: string): void {
+    try {
+      if (!localStorage) {
+        throw new StorageError('Armazenamento local não disponível');
       }
-      throw new StorageError('Erro ao carregar dados');
-    }
-  }
 
-  static clearData(): void {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      throw new StorageError('Erro ao limpar dados');
-    }
-  }
-
-  static exportData(): string {
-    try {
-      const data = this.loadData();
-      return this.compressData(data);
-    } catch (error) {
-      throw new StorageError('Erro ao exportar dados');
-    }
-  }
-
-  static importData(compressedData: string): void {
-    try {
-      const data = this.decompressData(compressedData);
-      if (!Array.isArray(data)) {
-        throw new ValidationError('Dados inválidos para importação');
+      let data;
+      try {
+        data = JSON.parse(jsonData);
+      } catch (error) {
+        throw new ValidationError('Dados importados inválidos');
       }
-      this.saveData(data);
+      this.validateData(data);
+      localStorage.setItem('schedule_data', jsonData);
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
       }
-      throw new StorageError('Erro ao importar dados');
+      throw new StorageError('Erro ao importar dados do armazenamento local');
     }
   }
 
+  /**
+   * Restaura um backup específico
+   */
   static restoreBackup(timestamp: number): void {
     try {
+      if (!localStorage) {
+        throw new StorageError('Armazenamento local não disponível');
+      }
+
       const backups = this.getBackups();
       const backup = backups.find(b => b.timestamp === timestamp);
-      
+
       if (!backup) {
         throw new ValidationError('Backup não encontrado');
       }
 
-      const data = this.decompressData(backup.data);
-      if (!Array.isArray(data)) {
+      let data;
+      try {
+        data = this.decompressData(backup.data);
+      } catch (error) {
         throw new ValidationError('Dados do backup corrompidos');
       }
-
-      this.saveData(data);
+      
+      let parsedData;
+      try {
+        parsedData = JSON.parse(data);
+      } catch (error) {
+        throw new ValidationError('Dados do backup corrompidos');
+      }
+      this.validateData(parsedData);
+      localStorage.setItem('schedule_data', data);
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
@@ -146,7 +277,14 @@ export class StorageService {
     }
   }
 
-  static getAvailableBackups(): Array<{ timestamp: number; date: string }> {
+  /**
+   * Retorna lista de backups disponíveis
+   */
+  static getAvailableBackups(): { timestamp: number; date: string }[] {
+    if (!this.isLocalStorageAvailable()) {
+      return [];
+    }
+
     try {
       const backups = this.getBackups();
       return backups.map(backup => ({
@@ -154,7 +292,10 @@ export class StorageService {
         date: new Date(backup.timestamp).toLocaleString()
       }));
     } catch (error) {
-      throw new StorageError('Erro ao listar backups');
+      if (error instanceof StorageError) {
+        throw error;
+      }
+      throw new StorageError('Erro ao recuperar backups');
     }
   }
 } 
