@@ -160,7 +160,7 @@ export function validateScheduleCode(code: string): { isValid: boolean; message?
     };
   }
 
-  const [, days, shift, timeSlots] = match;
+  const [, days, , timeSlots] = match;
   
   // Validar dias (1-7)
   const daysArray = days.split('').map(Number);
@@ -192,14 +192,11 @@ export function parseScheduleCode(code: string): { days: number[]; shift: 'M' | 
   
   if (!match) return null;
 
-  const [, days, shift, timeSlots] = match;
-  
-  // Converter a letra do turno para maiúscula
-  const normalizedShift = shift.toUpperCase() as 'M' | 'T' | 'N';
+  const [, days, , timeSlots] = match;
   
   return {
     days: [...new Set(days.split('').map(Number))],
-    shift: normalizedShift,
+    shift: match[2].toUpperCase() as 'M' | 'T' | 'N',
     timeSlots: [...new Set(timeSlots.split('').map(Number))]
   };
 }

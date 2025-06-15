@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Edit2, Trash2, Clock, Search } from 'lucide-react';
 import { Subject } from '../types/schedule';
-import { DAYS_MAP, SHIFTS_MAP, TIME_SLOTS } from '../utils/scheduleUtils';
+import { DAYS_MAP, TIME_SLOTS } from '../utils/scheduleUtils';
 import { ShiftFilter } from './ShiftFilter';
 import { useShiftFilter } from '../hooks/useShiftFilter';
 
