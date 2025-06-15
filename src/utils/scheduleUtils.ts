@@ -146,3 +146,60 @@ export function validateSubjectForm(
   
   return errors;
 }
+
+export function validateScheduleCode(code: string): { isValid: boolean; message?: string } {
+  if (!code) return { isValid: true };
+  
+  const scheduleCodeRegex = /^([1-7]+)([MTNmtn])([1-6]+)$/;
+  const match = code.match(scheduleCodeRegex);
+  
+  if (!match) {
+    return {
+      isValid: false,
+      message: 'Código inválido. Use o formato: números dos dias + letra do turno (M/T/N) + números dos horários. Ex: 23M23'
+    };
+  }
+
+  const [, days, shift, timeSlots] = match;
+  
+  // Validar dias (1-7)
+  const daysArray = days.split('').map(Number);
+  if (daysArray.some(day => day < 1 || day > 7)) {
+    return {
+      isValid: false,
+      message: 'Dias inválidos. Use números de 1 a 7'
+    };
+  }
+
+  // Validar horários (1-6)
+  const timeSlotsArray = timeSlots.split('').map(Number);
+  if (timeSlotsArray.some(slot => slot < 1 || slot > 6)) {
+    return {
+      isValid: false,
+      message: 'Horários inválidos. Use números de 1 a 6'
+    };
+  }
+
+  return { isValid: true };
+}
+
+export function parseScheduleCode(code: string): { days: number[]; shift: 'M' | 'T' | 'N'; timeSlots: number[] } | null {
+  const { isValid } = validateScheduleCode(code);
+  if (!isValid) return null;
+
+  const scheduleCodeRegex = /^([1-7]+)([MTNmtn])([1-6]+)$/;
+  const match = code.match(scheduleCodeRegex);
+  
+  if (!match) return null;
+
+  const [, days, shift, timeSlots] = match;
+  
+  // Converter a letra do turno para maiúscula
+  const normalizedShift = shift.toUpperCase() as 'M' | 'T' | 'N';
+  
+  return {
+    days: [...new Set(days.split('').map(Number))],
+    shift: normalizedShift,
+    timeSlots: [...new Set(timeSlots.split('').map(Number))]
+  };
+}

@@ -21,7 +21,9 @@ export function SubjectList({ subjects, onEditSubject, onDeleteSubject }: Subjec
       .filter(subject => 
         subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         subject.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        subject.location.toLowerCase().includes(searchTerm.toLowerCase())
+        subject.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        subject.professor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (subject.scheduleCode && subject.scheduleCode.toLowerCase().includes(searchTerm.toLowerCase()))
       );
   }, [subjects, searchTerm, selectedShifts]);
 
@@ -82,34 +84,26 @@ export function SubjectList({ subjects, onEditSubject, onDeleteSubject }: Subjec
           {filteredSubjects.map((subject) => (
             <div key={subject.id} className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: subject.color }}
-                    ></div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                      {subject.name}
-                    </h3>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-ufpb-primary text-white">
-                      {subject.code}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                    <div>
-                      <span className="font-medium">Local:</span> {subject.location}
-                    </div>
-                    <div>
-                      <span className="font-medium">Dias:</span> {formatDays(subject.days)}
-                    </div>
-                    <div>
-                      <span className="font-medium">Turno:</span> {SHIFTS_MAP[subject.shift]}
-                    </div>
-                    <div>
-                      <span className="font-medium">Horários:</span> {formatTimeSlots(subject.timeSlots, subject.shift)}
-                    </div>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {subject.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {subject.code} - {subject.location}
+                  </p>
+                  {subject.professor && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Professor: {subject.professor}
+                    </p>
+                  )}
+                  {subject.scheduleCode && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Código do Horário: {subject.scheduleCode}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {formatDays(subject.days)} - {formatTimeSlots(subject.timeSlots, subject.shift)}
+                  </p>
                 </div>
 
                 <div className="flex space-x-2">

@@ -5,7 +5,9 @@ import {
   DAYS_MAP, 
   SHIFTS_MAP, 
   TIME_SLOTS, 
-  validateSubjectForm
+  validateSubjectForm,
+  validateScheduleCode,
+  parseScheduleCode
 } from '../utils/scheduleUtils';
 import { SubjectService } from '../services/subjectService';
 import { useNotification } from '../contexts/NotificationContext';
@@ -29,7 +31,9 @@ export function SubjectForm({
     location: '',
     days: [] as number[],
     shift: '' as 'M' | 'T' | 'N' | '',
-    timeSlots: [] as number[]
+    timeSlots: [] as number[],
+    professor: '',
+    scheduleCode: ''
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -42,7 +46,9 @@ export function SubjectForm({
         location: editingSubject.location,
         days: editingSubject.days,
         shift: editingSubject.shift,
-        timeSlots: editingSubject.timeSlots
+        timeSlots: editingSubject.timeSlots,
+        professor: editingSubject.professor,
+        scheduleCode: editingSubject.scheduleCode || ''
       });
     } else {
       setFormData({
@@ -50,7 +56,9 @@ export function SubjectForm({
         location: '',
         days: [],
         shift: '',
-        timeSlots: []
+        timeSlots: [],
+        professor: '',
+        scheduleCode: ''
       });
     }
     setErrors([]);
@@ -66,6 +74,14 @@ export function SubjectForm({
       formData.shift,
       formData.timeSlots
     );
+
+    if (formData.scheduleCode) {
+      const { isValid, message } = validateScheduleCode(formData.scheduleCode);
+      if (!isValid && message) {
+        validationErrors.push(message);
+      }
+    }
+
     setErrors(validationErrors);
   }, [formData]);
 
@@ -73,6 +89,18 @@ export function SubjectForm({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setTouched(prev => ({ ...prev, [name]: true }));
+
+    if (name === 'scheduleCode') {
+      const parsedCode = parseScheduleCode(value);
+      if (parsedCode) {
+        setFormData(prev => ({
+          ...prev,
+          days: parsedCode.days,
+          shift: parsedCode.shift,
+          timeSlots: parsedCode.timeSlots
+        }));
+      }
+    }
   };
 
   const handleDayChange = (day: number) => {
@@ -110,7 +138,9 @@ export function SubjectForm({
           location: formData.location,
           days: formData.days,
           shift: formData.shift as 'M' | 'T' | 'N',
-          timeSlots: formData.timeSlots
+          timeSlots: formData.timeSlots,
+          professor: formData.professor,
+          scheduleCode: formData.scheduleCode || undefined
         },
         editingSubject?.id
       );
@@ -126,7 +156,9 @@ export function SubjectForm({
         location: formData.location,
         days: formData.days,
         shift: formData.shift as 'M' | 'T' | 'N',
-        timeSlots: formData.timeSlots
+        timeSlots: formData.timeSlots,
+        professor: formData.professor,
+        scheduleCode: formData.scheduleCode || undefined
       });
     }
   };
@@ -155,6 +187,7 @@ export function SubjectForm({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+          {/* Campos Obrigatórios */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -196,6 +229,47 @@ export function SubjectForm({
               {isFieldInvalid('local') && (
                 <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('local'))}</p>
               )}
+            </div>
+          </div>
+
+          {/* Campos Opcionais */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Professor
+              </label>
+              <input
+                type="text"
+                name="professor"
+                value={formData.professor}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:ring-ufpb-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-colors"
+                placeholder="Ex: João Silva"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Código do Horário
+              </label>
+              <input
+                type="text"
+                name="scheduleCode"
+                value={formData.scheduleCode}
+                onChange={handleChange}
+                className={`w-full px-4 py-2 rounded-md border ${
+                  isFieldInvalid('código do horário') 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-gray-300 dark:border-gray-600 focus:ring-ufpb-primary'
+                } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-colors`}
+                placeholder="Ex: 23M23 (dias + turno + horários)"
+              />
+              {isFieldInvalid('código do horário') && (
+                <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('código'))}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Formato: números dos dias (1-7) + letra do turno (M/T/N) + números dos horários (1-6)
+              </p>
             </div>
           </div>
 

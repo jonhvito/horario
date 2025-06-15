@@ -14,6 +14,8 @@ export interface Subject {
   days: number[];
   shift: 'M' | 'T' | 'N';
   timeSlots: number[];
+  professor: string;
+  scheduleCode?: string;
 }
 
 export interface ScheduleConflict {
