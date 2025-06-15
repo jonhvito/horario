@@ -11,7 +11,7 @@ export function generateId(): string {
  * Valida se uma string é um ID válido
  */
 export function isValidId(id: string): boolean {
-  return typeof id === 'string' && /^[a-zA-Z0-9\-]{6,}$/.test(id);
+  return typeof id === 'string' && /^[a-zA-Z0-9-]{6,}$/.test(id);
 }
 
 export const DAYS_MAP: Record<number, string> = {

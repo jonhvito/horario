@@ -28,7 +28,7 @@ export class StorageService {
   /**
    * Valida se os dados são um array válido de Subject
    */
-  private static validateData(data: any): data is Subject[] {
+  private static validateData(data: unknown): data is Subject[] {
     if (!Array.isArray(data)) {
       throw new ValidationError('Dados inválidos: deve ser um array');
     }
