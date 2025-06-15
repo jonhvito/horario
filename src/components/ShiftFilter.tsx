@@ -9,7 +9,7 @@ interface ShiftFilterProps {
 export function ShiftFilter({ selectedShifts, onChange }: ShiftFilterProps) {
   const handleShiftToggle = (shift: string) => {
     if (selectedShifts.includes(shift)) {
-      onChange(selectedShifts.filter(s => s !== shift));
+      onChange(selectedShifts.filter((s) => s !== shift));
     } else {
       onChange([...selectedShifts, shift]);
     }
@@ -25,9 +25,10 @@ export function ShiftFilter({ selectedShifts, onChange }: ShiftFilterProps) {
           key={shift}
           onClick={() => handleShiftToggle(shift)}
           className={`px-3 py-1 rounded-full text-sm font-medium transition-colors
-            ${selectedShifts.includes(shift)
-              ? 'bg-ufpb-primary text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            ${
+              selectedShifts.includes(shift)
+                ? 'bg-ufpb-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
         >
           {label}
@@ -35,4 +36,4 @@ export function ShiftFilter({ selectedShifts, onChange }: ShiftFilterProps) {
       ))}
     </div>
   );
-} 
+}

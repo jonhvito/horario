@@ -18,4 +18,4 @@ export function useShiftFilter() {
   }, [selectedShifts]);
 
   return [selectedShifts, setSelectedShifts] as const;
-} 
+}

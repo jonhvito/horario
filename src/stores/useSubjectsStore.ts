@@ -16,18 +16,20 @@ interface SubjectsState {
 export const useSubjectsStore = create<SubjectsState>((set) => ({
   subjects: SubjectService.loadSubjects(),
   error: null,
-  
+
   addSubject: (subjectData) => {
     try {
       const newSubject = SubjectService.addSubject(subjectData);
-      set((state) => ({ 
+      set((state) => ({
         subjects: [...state.subjects, newSubject],
-        error: null
+        error: null,
       }));
     } catch (error) {
-      if (error instanceof ValidationError || 
-          error instanceof ConflictError || 
-          error instanceof StorageError) {
+      if (
+        error instanceof ValidationError ||
+        error instanceof ConflictError ||
+        error instanceof StorageError
+      ) {
         set({ error: error.message });
       } else {
         set({ error: 'Erro ao adicionar disciplina' });
@@ -35,20 +37,20 @@ export const useSubjectsStore = create<SubjectsState>((set) => ({
       throw error;
     }
   },
-    
+
   updateSubject: (id, subjectData) => {
     try {
       const updatedSubject = SubjectService.updateSubject(id, subjectData);
       set((state) => ({
-        subjects: state.subjects.map((s) => 
-          s.id === id ? updatedSubject : s
-        ),
-        error: null
+        subjects: state.subjects.map((s) => (s.id === id ? updatedSubject : s)),
+        error: null,
       }));
     } catch (error) {
-      if (error instanceof ValidationError || 
-          error instanceof ConflictError || 
-          error instanceof StorageError) {
+      if (
+        error instanceof ValidationError ||
+        error instanceof ConflictError ||
+        error instanceof StorageError
+      ) {
         set({ error: error.message });
       } else {
         set({ error: 'Erro ao atualizar disciplina' });
@@ -56,17 +58,16 @@ export const useSubjectsStore = create<SubjectsState>((set) => ({
       throw error;
     }
   },
-    
+
   deleteSubject: (subjectId) => {
     try {
       SubjectService.deleteSubject(subjectId);
       set((state) => ({
         subjects: state.subjects.filter((s) => s.id !== subjectId),
-        error: null
+        error: null,
       }));
     } catch (error) {
-      if (error instanceof ValidationError || 
-          error instanceof StorageError) {
+      if (error instanceof ValidationError || error instanceof StorageError) {
         set({ error: error.message });
       } else {
         set({ error: 'Erro ao remover disciplina' });
@@ -74,7 +75,7 @@ export const useSubjectsStore = create<SubjectsState>((set) => ({
       throw error;
     }
   },
-    
+
   setSubjects: (subjects) => set({ subjects, error: null }),
 
   refreshSubjects: () => {
@@ -89,5 +90,5 @@ export const useSubjectsStore = create<SubjectsState>((set) => ({
       }
       throw error;
     }
-  }
-})); 
+  },
+}));

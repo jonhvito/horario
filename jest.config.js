@@ -24,6 +24,11 @@ const config = {
       lines: 80,
       statements: 80
     }
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json'
+    }
   }
 };
 

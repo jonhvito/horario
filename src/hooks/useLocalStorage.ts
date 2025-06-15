@@ -56,4 +56,4 @@ export const useLocalStorage = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
-}; 
+};

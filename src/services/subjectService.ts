@@ -1,6 +1,11 @@
 import { Subject, ScheduleConflict } from '../types/schedule';
 import { StorageService } from './storageService';
-import { generateSubjectCode, checkScheduleConflicts, getNextAvailableColor } from '../utils/scheduleUtils';
+import {
+  generateSubjectCode,
+  checkScheduleConflicts,
+  getNextAvailableColor,
+  generateId,
+} from '../utils/scheduleUtils';
 import { ValidationError, ConflictError, StorageError, handleError } from '../utils/errors';
 
 export class SubjectService {
@@ -43,7 +48,7 @@ export class SubjectService {
       if (error instanceof ValidationError) {
         throw error;
       }
-      throw new StorageError('Erro ao carregar disciplinas', { originalError: error });
+      throw new StorageError('Erro ao carregar disciplinas');
     }
   }
 
@@ -66,16 +71,16 @@ export class SubjectService {
       this.validateSubjectData(subject);
       const subjects = this.loadSubjects();
       const conflicts = checkScheduleConflicts(subject, subjects);
-      
+
       if (conflicts.length > 0) {
         throw new ConflictError('Conflito de horário detectado', { conflicts });
       }
 
       const newSubject: Subject = {
         ...subject,
-        id: crypto.randomUUID(),
+        id: generateId(),
         code: generateSubjectCode(subject.days, subject.shift, subject.timeSlots),
-        color: getNextAvailableColor(subjects)
+        color: getNextAvailableColor(subjects),
       };
 
       subjects.push(newSubject);
@@ -89,11 +94,14 @@ export class SubjectService {
     }
   }
 
-  static updateSubject(id: string, updates: Partial<Omit<Subject, 'id' | 'code' | 'color'>>): Subject {
+  static updateSubject(
+    id: string,
+    updates: Partial<Omit<Subject, 'id' | 'code' | 'color'>>
+  ): Subject {
     try {
       const subjects = this.loadSubjects();
-      const index = subjects.findIndex(s => s.id === id);
-      
+      const index = subjects.findIndex((s) => s.id === id);
+
       if (index === -1) {
         throw new ValidationError('Disciplina não encontrada', { id });
       }
@@ -106,11 +114,11 @@ export class SubjectService {
           updates.days || currentSubject.days,
           updates.shift || currentSubject.shift,
           updates.timeSlots || currentSubject.timeSlots
-        )
+        ),
       };
 
       this.validateSubjectData(updatedSubject, true);
-      
+
       const conflicts = checkScheduleConflicts(updatedSubject, subjects, id);
       if (conflicts.length > 0) {
         throw new ConflictError('Conflito de horário detectado', { conflicts });
@@ -130,8 +138,8 @@ export class SubjectService {
   static deleteSubject(id: string): void {
     try {
       const subjects = this.loadSubjects();
-      const filteredSubjects = subjects.filter(s => s.id !== id);
-      
+      const filteredSubjects = subjects.filter((s) => s.id !== id);
+
       if (filteredSubjects.length === subjects.length) {
         throw new ValidationError('Disciplina não encontrada', { id });
       }
@@ -145,7 +153,10 @@ export class SubjectService {
     }
   }
 
-  static getSubjectConflicts(subject: Omit<Subject, 'id' | 'code' | 'color'>, excludeId?: string): ScheduleConflict[] {
+  static getSubjectConflicts(
+    subject: Omit<Subject, 'id' | 'code' | 'color'>,
+    excludeId?: string
+  ): ScheduleConflict[] {
     try {
       this.validateSubjectData(subject);
       const subjects = this.loadSubjects();
@@ -186,4 +197,4 @@ export class SubjectService {
       throw new StorageError('Erro ao limpar horário', { originalError: error });
     }
   }
-} 
+}

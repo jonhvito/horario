@@ -13,15 +13,19 @@ describe('SubjectService', () => {
     days: [2, 4],
     shift: 'M' as const,
     timeSlots: [1, 2],
-    professor: ''
+    professor: '',
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockDB = [];
     jest.spyOn(StorageService, 'loadData').mockImplementation(() => [...mockDB]);
-    jest.spyOn(StorageService, 'saveData').mockImplementation((data) => { mockDB = [...data]; });
-    jest.spyOn(StorageService, 'clearData').mockImplementation(() => { mockDB = []; });
+    jest.spyOn(StorageService, 'saveData').mockImplementation((data) => {
+      mockDB = [...data];
+    });
+    jest.spyOn(StorageService, 'clearData').mockImplementation(() => {
+      mockDB = [];
+    });
     jest.spyOn(StorageService, 'exportData').mockImplementation(() => JSON.stringify(mockDB));
     jest.spyOn(StorageService, 'importData').mockImplementation((json) => {
       try {
@@ -43,7 +47,7 @@ describe('SubjectService', () => {
         ...mockSubject,
         id: expect.any(String),
         code: expect.any(String),
-        color: expect.any(String)
+        color: expect.any(String),
       });
       expect(StorageService.saveData).toHaveBeenCalled();
     });
@@ -66,7 +70,7 @@ describe('SubjectService', () => {
       ...mockSubject,
       id: '123',
       code: 'TEST',
-      color: '#000000'
+      color: '#000000',
     };
 
     beforeEach(() => {
@@ -81,8 +85,9 @@ describe('SubjectService', () => {
     });
 
     it('should throw ValidationError when subject is not found', () => {
-      expect(() => SubjectService.updateSubject('non-existent-id', { name: 'New Name' }))
-        .toThrow(ValidationError);
+      expect(() => SubjectService.updateSubject('non-existent-id', { name: 'New Name' })).toThrow(
+        ValidationError
+      );
     });
 
     it('should throw ConflictError when update creates a conflict', () => {
@@ -92,20 +97,22 @@ describe('SubjectService', () => {
         days: [3, 5],
         id: '456',
         code: 'TEST2',
-        color: '#000001'
+        color: '#000001',
       };
       (StorageService.loadData as jest.Mock).mockReturnValue([existingSubject, subject2]);
 
-      expect(() => SubjectService.updateSubject(subject2.id, { days: [2, 4] }))
-        .toThrow(ConflictError);
+      expect(() => SubjectService.updateSubject(subject2.id, { days: [2, 4] })).toThrow(
+        ConflictError
+      );
     });
 
     it('should throw StorageError when storage fails', () => {
       (StorageService.loadData as jest.Mock).mockImplementation(() => {
         throw new Error('Storage error');
       });
-      expect(() => SubjectService.updateSubject(existingSubject.id, { name: 'New Name' }))
-        .toThrow(StorageError);
+      expect(() => SubjectService.updateSubject(existingSubject.id, { name: 'New Name' })).toThrow(
+        StorageError
+      );
     });
   });
 
@@ -114,7 +121,7 @@ describe('SubjectService', () => {
       ...mockSubject,
       id: '123',
       code: 'TEST',
-      color: '#000000'
+      color: '#000000',
     };
 
     beforeEach(() => {
@@ -127,16 +134,14 @@ describe('SubjectService', () => {
     });
 
     it('should throw ValidationError when subject is not found', () => {
-      expect(() => SubjectService.deleteSubject('non-existent-id'))
-        .toThrow(ValidationError);
+      expect(() => SubjectService.deleteSubject('non-existent-id')).toThrow(ValidationError);
     });
 
     it('should throw StorageError when storage fails', () => {
       (StorageService.loadData as jest.Mock).mockImplementation(() => {
         throw new Error('Storage error');
       });
-      expect(() => SubjectService.deleteSubject(existingSubject.id))
-        .toThrow(StorageError);
+      expect(() => SubjectService.deleteSubject(existingSubject.id)).toThrow(StorageError);
     });
   });
 
@@ -156,8 +161,7 @@ describe('SubjectService', () => {
       (StorageService.loadData as jest.Mock).mockImplementation(() => {
         throw new Error('Storage error');
       });
-      expect(() => SubjectService.getSubjectConflicts(mockSubject))
-        .toThrow(StorageError);
+      expect(() => SubjectService.getSubjectConflicts(mockSubject)).toThrow(StorageError);
     });
   });
 
@@ -166,7 +170,7 @@ describe('SubjectService', () => {
       ...mockSubject,
       id: '123',
       code: 'TEST',
-      color: '#000000'
+      color: '#000000',
     };
 
     beforeEach(() => {
@@ -186,7 +190,9 @@ describe('SubjectService', () => {
     });
 
     it('should throw StorageError when storage fails', () => {
-      jest.spyOn(StorageService, 'exportData').mockImplementation(() => { throw new Error('Storage error'); });
+      jest.spyOn(StorageService, 'exportData').mockImplementation(() => {
+        throw new Error('Storage error');
+      });
       expect(() => SubjectService.exportSchedule()).toThrow(StorageError);
     });
   });
@@ -198,7 +204,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const addedSubject = SubjectService.addSubject(subject);
@@ -206,7 +212,7 @@ describe('SubjectService', () => {
       ...subject,
       id: expect.any(String),
       code: expect.any(String),
-      color: expect.any(String)
+      color: expect.any(String),
     });
   });
 
@@ -217,7 +223,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const subject2 = {
@@ -226,7 +232,7 @@ describe('SubjectService', () => {
       days: [3, 5],
       shift: 'M' as const,
       timeSlots: [3, 4],
-      professor: ''
+      professor: '',
     };
 
     SubjectService.addSubject(subject1);
@@ -245,14 +251,14 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const addedSubject = SubjectService.addSubject(subject);
     const updatedSubject = {
       ...subject,
       name: 'Cálculo II',
-      professor: 'João Silva'
+      professor: 'João Silva',
     };
 
     SubjectService.updateSubject(addedSubject.id, updatedSubject);
@@ -267,7 +273,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const addedSubject = SubjectService.addSubject(subject);
@@ -283,7 +289,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const subject2 = {
@@ -292,7 +298,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     SubjectService.addSubject(subject1);
@@ -307,7 +313,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const subject2 = {
@@ -316,7 +322,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'T' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     SubjectService.addSubject(subject1);
@@ -331,7 +337,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const subject2 = {
@@ -340,7 +346,7 @@ describe('SubjectService', () => {
       days: [3, 5],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     SubjectService.addSubject(subject1);
@@ -355,7 +361,7 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     const subject2 = {
@@ -364,11 +370,11 @@ describe('SubjectService', () => {
       days: [2, 4],
       shift: 'M' as const,
       timeSlots: [3, 4],
-      professor: ''
+      professor: '',
     };
 
     SubjectService.addSubject(subject1);
     const conflicts = SubjectService.getSubjectConflicts(subject2);
     expect(conflicts).toHaveLength(0);
   });
-}); 
+});

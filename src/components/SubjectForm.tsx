@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { Subject, ScheduleConflict } from '../types/schedule';
-import { 
-  DAYS_MAP, 
-  SHIFTS_MAP, 
-  TIME_SLOTS, 
+import {
+  DAYS_MAP,
+  SHIFTS_MAP,
+  TIME_SLOTS,
   validateSubjectForm,
   validateScheduleCode,
-  parseScheduleCode
+  parseScheduleCode,
 } from '../utils/scheduleUtils';
 import { SubjectService } from '../services/subjectService';
 import { useNotification } from '../contexts/NotificationContext';
@@ -19,12 +19,7 @@ interface SubjectFormProps {
   editingSubject?: Subject | null;
 }
 
-export function SubjectForm({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  editingSubject 
-}: SubjectFormProps) {
+export function SubjectForm({ isOpen, onClose, onSave, editingSubject }: SubjectFormProps) {
   const { showNotification } = useNotification();
   const [formData, setFormData] = useState({
     name: '',
@@ -33,7 +28,7 @@ export function SubjectForm({
     shift: '' as 'M' | 'T' | 'N' | '',
     timeSlots: [] as number[],
     professor: '',
-    scheduleCode: ''
+    scheduleCode: '',
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -48,7 +43,7 @@ export function SubjectForm({
         shift: editingSubject.shift,
         timeSlots: editingSubject.timeSlots,
         professor: editingSubject.professor,
-        scheduleCode: editingSubject.scheduleCode || ''
+        scheduleCode: editingSubject.scheduleCode || '',
       });
     } else {
       setFormData({
@@ -58,7 +53,7 @@ export function SubjectForm({
         shift: '',
         timeSlots: [],
         professor: '',
-        scheduleCode: ''
+        scheduleCode: '',
       });
     }
     setErrors([]);
@@ -87,45 +82,43 @@ export function SubjectForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setTouched(prev => ({ ...prev, [name]: true }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
 
     if (name === 'scheduleCode') {
       const parsedCode = parseScheduleCode(value);
       if (parsedCode) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           days: parsedCode.days,
           shift: parsedCode.shift,
-          timeSlots: parsedCode.timeSlots
+          timeSlots: parsedCode.timeSlots,
         }));
       }
     }
   };
 
   const handleDayChange = (day: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      days: prev.days.includes(day)
-        ? prev.days.filter(d => d !== day)
-        : [...prev.days, day]
+      days: prev.days.includes(day) ? prev.days.filter((d) => d !== day) : [...prev.days, day],
     }));
-    setTouched(prev => ({ ...prev, days: true }));
+    setTouched((prev) => ({ ...prev, days: true }));
   };
 
   const handleTimeSlotChange = (slot: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       timeSlots: prev.timeSlots.includes(slot)
-        ? prev.timeSlots.filter(s => s !== slot)
-        : [...prev.timeSlots, slot]
+        ? prev.timeSlots.filter((s) => s !== slot)
+        : [...prev.timeSlots, slot],
     }));
-    setTouched(prev => ({ ...prev, timeSlots: true }));
+    setTouched((prev) => ({ ...prev, timeSlots: true }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (errors.length > 0) {
       showNotification('Por favor, corrija os erros no formulário', 'error');
       return;
@@ -140,7 +133,7 @@ export function SubjectForm({
           shift: formData.shift as 'M' | 'T' | 'N',
           timeSlots: formData.timeSlots,
           professor: formData.professor,
-          scheduleCode: formData.scheduleCode || undefined
+          scheduleCode: formData.scheduleCode || undefined,
         },
         editingSubject?.id
       );
@@ -158,13 +151,16 @@ export function SubjectForm({
         shift: formData.shift as 'M' | 'T' | 'N',
         timeSlots: formData.timeSlots,
         professor: formData.professor,
-        scheduleCode: formData.scheduleCode || undefined
+        scheduleCode: formData.scheduleCode || undefined,
       });
     }
   };
 
   const isFieldInvalid = (fieldName: string) => {
-    return touched[fieldName] && errors.some(error => error.toLowerCase().includes(fieldName.toLowerCase()));
+    return (
+      touched[fieldName] &&
+      errors.some((error) => error.toLowerCase().includes(fieldName.toLowerCase()))
+    );
   };
 
   if (!isOpen) return null;
@@ -199,14 +195,16 @@ export function SubjectForm({
                 value={formData.name}
                 onChange={handleChange}
                 className={`w-full px-4 py-2 rounded-md border ${
-                  isFieldInvalid('nome') 
-                    ? 'border-red-500 focus:ring-red-500' 
+                  isFieldInvalid('nome')
+                    ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-300 dark:border-gray-600 focus:ring-ufpb-primary'
                 } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-colors`}
                 placeholder="Ex: Cálculo I"
               />
               {isFieldInvalid('nome') && (
-                <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('nome'))}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.find((e) => e.toLowerCase().includes('nome'))}
+                </p>
               )}
             </div>
 
@@ -220,14 +218,16 @@ export function SubjectForm({
                 value={formData.location}
                 onChange={handleChange}
                 className={`w-full px-4 py-2 rounded-md border ${
-                  isFieldInvalid('local') 
-                    ? 'border-red-500 focus:ring-red-500' 
+                  isFieldInvalid('local')
+                    ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-300 dark:border-gray-600 focus:ring-ufpb-primary'
                 } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-colors`}
                 placeholder="Ex: CAE 108"
               />
               {isFieldInvalid('local') && (
-                <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('local'))}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.find((e) => e.toLowerCase().includes('local'))}
+                </p>
               )}
             </div>
           </div>
@@ -258,17 +258,20 @@ export function SubjectForm({
                 value={formData.scheduleCode}
                 onChange={handleChange}
                 className={`w-full px-4 py-2 rounded-md border ${
-                  isFieldInvalid('código do horário') 
-                    ? 'border-red-500 focus:ring-red-500' 
+                  isFieldInvalid('código do horário')
+                    ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-300 dark:border-gray-600 focus:ring-ufpb-primary'
                 } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-colors`}
                 placeholder="Ex: 23M23 (dias + turno + horários)"
               />
               {isFieldInvalid('código do horário') && (
-                <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('código'))}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.find((e) => e.toLowerCase().includes('código'))}
+                </p>
               )}
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Formato: números dos dias (1-7) + letra do turno (M/T/N) + números dos horários (1-6)
+                Formato: números dos dias (1-7) + letra do turno (M/T/N) + números dos horários
+                (1-6)
               </p>
             </div>
           </div>
@@ -291,7 +294,9 @@ export function SubjectForm({
               ))}
             </div>
             {isFieldInvalid('dias') && (
-              <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('dias'))}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.find((e) => e.toLowerCase().includes('dias'))}
+              </p>
             )}
           </div>
 
@@ -315,7 +320,9 @@ export function SubjectForm({
               ))}
             </div>
             {isFieldInvalid('turno') && (
-              <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('turno'))}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.find((e) => e.toLowerCase().includes('turno'))}
+              </p>
             )}
           </div>
 
@@ -325,7 +332,7 @@ export function SubjectForm({
                 Horários *
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {TIME_SLOTS[formData.shift as 'M' | 'T' | 'N'].map(slot => (
+                {TIME_SLOTS[formData.shift as 'M' | 'T' | 'N'].map((slot) => (
                   <label key={slot.id} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -338,7 +345,9 @@ export function SubjectForm({
                 ))}
               </div>
               {isFieldInvalid('horários') && (
-                <p className="mt-1 text-sm text-red-600">{errors.find(e => e.toLowerCase().includes('horários'))}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.find((e) => e.toLowerCase().includes('horários'))}
+                </p>
               )}
             </div>
           )}
@@ -354,7 +363,8 @@ export function SubjectForm({
                   <ul className="mt-2 text-sm text-red-700 dark:text-red-300 list-disc list-inside">
                     {conflicts.map((conflict, index) => (
                       <li key={index}>
-                        {conflict.existingSubject.name} - {DAYS_MAP[conflict.day]}, {conflict.timeSlot}º horário
+                        {conflict.existingSubject.name} - {DAYS_MAP[conflict.day]},{' '}
+                        {conflict.timeSlot}º horário
                       </li>
                     ))}
                   </ul>

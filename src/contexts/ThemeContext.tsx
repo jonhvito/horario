@@ -25,16 +25,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [darkMode]);
 
-  const value = React.useMemo(() => ({
-    darkMode,
-    toggleTheme,
-  }), [darkMode, toggleTheme]);
-
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+  const value = React.useMemo(
+    () => ({
+      darkMode,
+      toggleTheme,
+    }),
+    [darkMode, toggleTheme]
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {
@@ -43,4 +42,4 @@ export const useTheme = () => {
     throw new Error('useTheme deve ser usado dentro de um ThemeProvider');
   }
   return context;
-}; 
+};

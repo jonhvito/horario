@@ -17,25 +17,29 @@ export function SubjectList({ subjects, onEditSubject, onDeleteSubject }: Subjec
 
   const filteredSubjects = useMemo(() => {
     return subjects
-      .filter(subject => selectedShifts.includes(subject.shift))
-      .filter(subject => 
-        subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        subject.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        subject.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        subject.professor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (subject.scheduleCode && subject.scheduleCode.toLowerCase().includes(searchTerm.toLowerCase()))
+      .filter((subject) => selectedShifts.includes(subject.shift))
+      .filter(
+        (subject) =>
+          subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.professor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (subject.scheduleCode &&
+            subject.scheduleCode.toLowerCase().includes(searchTerm.toLowerCase()))
       );
   }, [subjects, searchTerm, selectedShifts]);
 
   const formatDays = (days: number[]) => {
-    return days.map(day => DAYS_MAP[day]).join(', ');
+    return days.map((day) => DAYS_MAP[day]).join(', ');
   };
 
   const formatTimeSlots = (slots: number[], shift: 'M' | 'T' | 'N') => {
-    return slots.map(slot => {
-      const timeSlot = TIME_SLOTS[shift].find(ts => ts.id === slot);
-      return `${slot}º (${timeSlot?.start} - ${timeSlot?.end})`;
-    }).join(', ');
+    return slots
+      .map((slot) => {
+        const timeSlot = TIME_SLOTS[shift].find((ts) => ts.id === slot);
+        return `${slot}º (${timeSlot?.start} - ${timeSlot?.end})`;
+      })
+      .join(', ');
   };
 
   if (subjects.length === 0) {
@@ -54,10 +58,7 @@ export function SubjectList({ subjects, onEditSubject, onDeleteSubject }: Subjec
 
   return (
     <div className="space-y-4">
-      <ShiftFilter
-        selectedShifts={selectedShifts}
-        onChange={setSelectedShifts}
-      />
+      <ShiftFilter selectedShifts={selectedShifts} onChange={setSelectedShifts} />
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         <div className="p-4 sm:p-6 border-b bg-gray-50 dark:bg-gray-900">
@@ -79,10 +80,13 @@ export function SubjectList({ subjects, onEditSubject, onDeleteSubject }: Subjec
             </div>
           </div>
         </div>
-        
+
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {filteredSubjects.map((subject) => (
-            <div key={subject.id} className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+            <div
+              key={subject.id}
+              className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+            >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">

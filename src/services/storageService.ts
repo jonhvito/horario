@@ -1,11 +1,11 @@
 import { Subject } from '../types/schedule';
 import { ValidationError, StorageError } from '../utils/errors';
+import { generateId, isValidId } from '../utils/scheduleUtils';
 
 // Constantes configuráveis
-const STORAGE_KEY = 'schedule_data';
-const BACKUP_KEY = 'schedule_backup';
-const MAX_BACKUPS = 5;
-const COMPRESSION_ENABLED = true;
+export const STORAGE_KEY = 'schedule_data';
+export const BACKUP_KEY = 'schedule_backup';
+export const MAX_BACKUPS = 5;
 
 /**
  * Serviço responsável por gerenciar o armazenamento local dos dados do horário
@@ -34,7 +34,9 @@ export class StorageService {
     }
 
     for (const subject of data) {
-      if (!subject.id || typeof subject.id !== 'string') {
+      if (!subject.id) {
+        subject.id = generateId();
+      } else if (!isValidId(subject.id)) {
         throw new ValidationError('Dados inválidos: ID inválido');
       }
       if (!subject.name || typeof subject.name !== 'string') {
@@ -96,7 +98,7 @@ export class StorageService {
       const backups = this.getBackups();
       const newBackup = {
         timestamp: Date.now(),
-        data: this.compressData(JSON.stringify(data))
+        data: this.compressData(JSON.stringify(data)),
       };
 
       backups.unshift(newBackup);
@@ -248,7 +250,7 @@ export class StorageService {
       }
 
       const backups = this.getBackups();
-      const backup = backups.find(b => b.timestamp === timestamp);
+      const backup = backups.find((b) => b.timestamp === timestamp);
 
       if (!backup) {
         throw new ValidationError('Backup não encontrado');
@@ -260,7 +262,7 @@ export class StorageService {
       } catch (error) {
         throw new ValidationError('Dados do backup corrompidos');
       }
-      
+
       let parsedData;
       try {
         parsedData = JSON.parse(data);
@@ -287,15 +289,12 @@ export class StorageService {
 
     try {
       const backups = this.getBackups();
-      return backups.map(backup => ({
+      return backups.map((backup) => ({
         timestamp: backup.timestamp,
-        date: new Date(backup.timestamp).toLocaleString()
+        date: new Date(backup.timestamp).toLocaleString(),
       }));
-    } catch (error) {
-      if (error instanceof StorageError) {
-        throw error;
-      }
-      throw new StorageError('Erro ao recuperar backups');
+    } catch {
+      return [];
     }
   }
-} 
+}

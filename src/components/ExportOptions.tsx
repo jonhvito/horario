@@ -29,13 +29,17 @@ export function ExportOptions() {
 
   const handleExportText = () => {
     try {
-      const text = subjects.map(subject => {
-        return `${subject.name} (${subject.code})\n` +
-               `Local: ${subject.location}\n` +
-               `Dias: ${subject.days.join(', ')}\n` +
-               `Turno: ${subject.shift}\n` +
-               `Horários: ${subject.timeSlots.join(', ')}\n\n`;
-      }).join('');
+      const text = subjects
+        .map((subject) => {
+          return (
+            `${subject.name} (${subject.code})\n` +
+            `Local: ${subject.location}\n` +
+            `Dias: ${subject.days.join(', ')}\n` +
+            `Turno: ${subject.shift}\n` +
+            `Horários: ${subject.timeSlots.join(', ')}\n\n`
+          );
+        })
+        .join('');
 
       const blob = new Blob([text], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -80,7 +84,11 @@ export function ExportOptions() {
   };
 
   const handleClearSchedule = () => {
-    if (window.confirm('Tem certeza que deseja limpar todo o horário? Esta ação não pode ser desfeita.')) {
+    if (
+      window.confirm(
+        'Tem certeza que deseja limpar todo o horário? Esta ação não pode ser desfeita.'
+      )
+    ) {
       try {
         SubjectService.clearSchedule();
         setSubjects([]);

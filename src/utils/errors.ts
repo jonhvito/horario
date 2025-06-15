@@ -40,4 +40,4 @@ export function handleError(error: unknown): AppError {
   }
 
   return new AppError('Ocorreu um erro inesperado', 'UNKNOWN_ERROR');
-} 
+}

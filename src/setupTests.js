@@ -3,11 +3,11 @@ const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn()
+  clear: jest.fn(),
 };
 
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // Mock do ResizeObserver
@@ -32,7 +32,7 @@ global.IntersectionObserver = IntersectionObserverMock;
 // Mock do matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -47,6 +47,6 @@ Object.defineProperty(window, 'matchMedia', {
 // Mock do crypto para ambiente de testes
 if (!global.crypto) {
   global.crypto = {
-    getRandomValues: (arr) => require('crypto').randomBytes(arr.length)
+    getRandomValues: (arr) => require('crypto').randomBytes(arr.length),
   };
-} 
+}

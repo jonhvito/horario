@@ -1,7 +1,7 @@
 /**
  * UFPB Schedule System
  * Copyright (c) 2024 João Victor
- * 
+ *
  * Este arquivo é parte do UFPB Schedule System.
  * O UFPB Schedule System é um software livre; você pode redistribuí-lo e/ou
  * modificá-lo sob os termos da Licença MIT.
@@ -91,7 +91,7 @@ function AppContent() {
       <div ref={scheduleRef}>
         {activeTab === 'grid' ? (
           <ScheduleGrid
-            subjects={subjects} 
+            subjects={subjects}
             onEditSubject={handleEditSubject}
             onDeleteSubject={handleDeleteSubject}
           />

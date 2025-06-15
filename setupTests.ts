@@ -18,11 +18,19 @@ if (!window.crypto) {
     value: {
       subtle: {},
       getRandomValues: (array: Uint8Array) => array,
-      randomUUID: () => '123e4567-e89b-12d3-a456-426614174000'
+      randomUUID: () => '123e4567-e89b-12d3-a456-426614174000',
     },
     configurable: true,
-    writable: true
+    writable: true,
   });
+}
+if (!window.crypto.randomUUID) {
+  window.crypto.randomUUID = () => '123e4567-e89b-12d3-a456-426614174000';
+}
+if (!(global as any).crypto) {
+  (global as any).crypto = window.crypto;
+} else if (!(global as any).crypto.randomUUID) {
+  (global as any).crypto.randomUUID = () => '123e4567-e89b-12d3-a456-426614174000';
 }
 
 // Mock do localStorage
@@ -30,11 +38,11 @@ const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
-  clear: vi.fn()
+  clear: vi.fn(),
 };
 
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 });
 
 // Mock do ResizeObserver
@@ -54,7 +62,9 @@ class IntersectionObserverMock implements IntersectionObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
-  takeRecords(): IntersectionObserverEntry[] { return []; }
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
 }
 
 window.IntersectionObserver = IntersectionObserverMock as any;
@@ -62,7 +72,7 @@ window.IntersectionObserver = IntersectionObserverMock as any;
 // Mock do matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

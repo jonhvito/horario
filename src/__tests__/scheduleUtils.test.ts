@@ -1,4 +1,11 @@
-import { generateSubjectCode, checkScheduleConflicts, getNextAvailableColor, validateSubjectForm, validateScheduleCode, parseScheduleCode } from '../utils/scheduleUtils';
+import {
+  generateSubjectCode,
+  checkScheduleConflicts,
+  getNextAvailableColor,
+  validateSubjectForm,
+  validateScheduleCode,
+  parseScheduleCode,
+} from '../utils/scheduleUtils';
 import { Subject } from '../types/schedule';
 
 describe('scheduleUtils', () => {
@@ -21,7 +28,7 @@ describe('scheduleUtils', () => {
       days: [2, 4],
       shift: 'M',
       timeSlots: [1, 2],
-      professor: ''
+      professor: '',
     };
 
     it('returns empty array when there are no conflicts', () => {
@@ -34,7 +41,7 @@ describe('scheduleUtils', () => {
         ...mockSubject,
         id: '123',
         code: '24M12',
-        color: '#ef4444'
+        color: '#ef4444',
       };
       const conflicts = checkScheduleConflicts(mockSubject, [existingSubject]);
       expect(conflicts).toHaveLength(4);
@@ -45,7 +52,7 @@ describe('scheduleUtils', () => {
         ...mockSubject,
         id: '123',
         code: '24M12',
-        color: '#ef4444'
+        color: '#ef4444',
       };
       const conflicts = checkScheduleConflicts(mockSubject, [existingSubject], '123');
       expect(conflicts).toHaveLength(0);
@@ -77,8 +84,8 @@ describe('scheduleUtils', () => {
           shift: 'M',
           timeSlots: [1, 2],
           professor: '',
-          color: '#ef4444'
-        }
+          color: '#ef4444',
+        },
       ];
       const color = getNextAvailableColor(subjects);
       expect(color).toBe('#f97316');
@@ -92,28 +99,48 @@ describe('scheduleUtils', () => {
     });
 
     it('validates name', () => {
-      expect(validateSubjectForm('', 'CAE 108', [2, 4], 'M', [1, 2])).toContain('Nome da disciplina é obrigatório');
-      expect(validateSubjectForm('a'.repeat(101), 'CAE 108', [2, 4], 'M', [1, 2])).toContain('Nome da disciplina deve ter no máximo 100 caracteres');
+      expect(validateSubjectForm('', 'CAE 108', [2, 4], 'M', [1, 2])).toContain(
+        'Nome da disciplina é obrigatório'
+      );
+      expect(validateSubjectForm('a'.repeat(101), 'CAE 108', [2, 4], 'M', [1, 2])).toContain(
+        'Nome da disciplina deve ter no máximo 100 caracteres'
+      );
     });
 
     it('validates location', () => {
-      expect(validateSubjectForm('Cálculo I', '', [2, 4], 'M', [1, 2])).toContain('Local da aula é obrigatório');
-      expect(validateSubjectForm('Cálculo I', 'a'.repeat(51), [2, 4], 'M', [1, 2])).toContain('Local da aula deve ter no máximo 50 caracteres');
+      expect(validateSubjectForm('Cálculo I', '', [2, 4], 'M', [1, 2])).toContain(
+        'Local da aula é obrigatório'
+      );
+      expect(validateSubjectForm('Cálculo I', 'a'.repeat(51), [2, 4], 'M', [1, 2])).toContain(
+        'Local da aula deve ter no máximo 50 caracteres'
+      );
     });
 
     it('validates days', () => {
-      expect(validateSubjectForm('Cálculo I', 'CAE 108', [], 'M', [1, 2])).toContain('Selecione pelo menos um dia da semana');
-      expect(validateSubjectForm('Cálculo I', 'CAE 108', [1, 8], 'M', [1, 2])).toContain('Dias inválidos. Use valores entre 2 (Segunda) e 7 (Sábado).');
+      expect(validateSubjectForm('Cálculo I', 'CAE 108', [], 'M', [1, 2])).toContain(
+        'Selecione pelo menos um dia da semana'
+      );
+      expect(validateSubjectForm('Cálculo I', 'CAE 108', [1, 8], 'M', [1, 2])).toContain(
+        'Dias inválidos. Use valores entre 2 (Segunda) e 7 (Sábado).'
+      );
     });
 
     it('validates shift', () => {
-      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], '', [1, 2])).toContain('Selecione um turno');
+      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], '', [1, 2])).toContain(
+        'Selecione um turno'
+      );
     });
 
     it('validates timeSlots', () => {
-      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], 'M', [])).toContain('Selecione pelo menos um horário');
-      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], 'M', [0, 7])).toContain('Horários inválidos para o turno M. Use valores entre 1 e 6.');
-      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], 'N', [5, 6])).toContain('Horários inválidos para o turno N. Use valores entre 1 e 4.');
+      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], 'M', [])).toContain(
+        'Selecione pelo menos um horário'
+      );
+      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], 'M', [0, 7])).toContain(
+        'Horários inválidos para o turno M. Use valores entre 1 e 6.'
+      );
+      expect(validateSubjectForm('Cálculo I', 'CAE 108', [2, 4], 'N', [5, 6])).toContain(
+        'Horários inválidos para o turno N. Use valores entre 1 e 4.'
+      );
     });
   });
 
@@ -141,7 +168,7 @@ describe('scheduleUtils', () => {
       expect(result).toEqual({
         days: [2, 4],
         shift: 'M',
-        timeSlots: [1, 2]
+        timeSlots: [1, 2],
       });
     });
 
@@ -159,7 +186,7 @@ describe('scheduleUtils', () => {
       expect(result).toEqual({
         days: [2, 4],
         shift: 'M',
-        timeSlots: [1, 2]
+        timeSlots: [1, 2],
       });
     });
   });

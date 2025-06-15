@@ -36,7 +36,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <header ref={headerRef} className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors static sm:sticky sm:top-0 z-50">
+      <header
+        ref={headerRef}
+        className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors static sm:sticky sm:top-0 z-50"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between py-2 sm:py-4 gap-2 sm:gap-0">
             <div className="flex items-center justify-center w-full sm:w-auto space-x-3">
@@ -132,4 +135,4 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </main>
     </div>
   );
-}; 
+};
