@@ -7,7 +7,8 @@ describe('SubjectService', () => {
     location: 'CAE 108',
     days: [2, 4],
     shift: 'M' as const,
-    timeSlots: [1, 2]
+    timeSlots: [1, 2],
+    professor: ''
   };
 
   beforeEach(() => {
@@ -104,5 +105,186 @@ describe('SubjectService', () => {
     it('should return false when importing invalid data', () => {
       expect(SubjectService.importSchedule('invalid-json')).toBe(false);
     });
+  });
+
+  it('should add a new subject', () => {
+    const subject = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const addedSubject = SubjectService.addSubject(subject);
+    expect(addedSubject).toMatchObject({
+      ...subject,
+      id: expect.any(String),
+      code: expect.any(String),
+      color: expect.any(String)
+    });
+  });
+
+  it('should get all subjects', () => {
+    const subject1 = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const subject2 = {
+      name: 'Física I',
+      location: 'CAE 109',
+      days: [3, 5],
+      shift: 'M' as const,
+      timeSlots: [3, 4],
+      professor: ''
+    };
+
+    SubjectService.addSubject(subject1);
+    SubjectService.addSubject(subject2);
+
+    const subjects = SubjectService.loadSubjects();
+    expect(subjects).toHaveLength(2);
+    expect(subjects[0]).toMatchObject(subject1);
+    expect(subjects[1]).toMatchObject(subject2);
+  });
+
+  it('should update a subject', () => {
+    const subject = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const addedSubject = SubjectService.addSubject(subject);
+    const updatedSubject = {
+      ...subject,
+      name: 'Cálculo II',
+      professor: 'João Silva'
+    };
+
+    SubjectService.updateSubject(addedSubject.id, updatedSubject);
+    const subjects = SubjectService.loadSubjects();
+    expect(subjects[0]).toMatchObject(updatedSubject);
+  });
+
+  it('should delete a subject', () => {
+    const subject = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const addedSubject = SubjectService.addSubject(subject);
+    SubjectService.deleteSubject(addedSubject.id);
+    const subjects = SubjectService.loadSubjects();
+    expect(subjects).toHaveLength(0);
+  });
+
+  it('should detect conflicts between subjects', () => {
+    const subject1 = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const subject2 = {
+      name: 'Física I',
+      location: 'CAE 109',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    SubjectService.addSubject(subject1);
+    const conflicts = SubjectService.getSubjectConflicts(subject2);
+    expect(conflicts).toHaveLength(4);
+  });
+
+  it('should not detect conflicts for different shifts', () => {
+    const subject1 = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const subject2 = {
+      name: 'Física I',
+      location: 'CAE 109',
+      days: [2, 4],
+      shift: 'T' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    SubjectService.addSubject(subject1);
+    const conflicts = SubjectService.getSubjectConflicts(subject2);
+    expect(conflicts).toHaveLength(0);
+  });
+
+  it('should not detect conflicts for different days', () => {
+    const subject1 = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const subject2 = {
+      name: 'Física I',
+      location: 'CAE 109',
+      days: [3, 5],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    SubjectService.addSubject(subject1);
+    const conflicts = SubjectService.getSubjectConflicts(subject2);
+    expect(conflicts).toHaveLength(0);
+  });
+
+  it('should not detect conflicts for different time slots', () => {
+    const subject1 = {
+      name: 'Cálculo I',
+      location: 'CAE 108',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [1, 2],
+      professor: ''
+    };
+
+    const subject2 = {
+      name: 'Física I',
+      location: 'CAE 109',
+      days: [2, 4],
+      shift: 'M' as const,
+      timeSlots: [3, 4],
+      professor: ''
+    };
+
+    SubjectService.addSubject(subject1);
+    const conflicts = SubjectService.getSubjectConflicts(subject2);
+    expect(conflicts).toHaveLength(0);
   });
 }); 
